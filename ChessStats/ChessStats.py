@@ -1,10 +1,16 @@
+# from pandas import options
 import requests
 import time
 from icecream import ic
 from bs4 import BeautifulSoup
-from selenium import webdriver
 
-options = webdriver.EdgeOptions()
+from msedge.selenium_tools import Edge, EdgeOptions
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.wait import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+
+
+options = EdgeOptions()
 options.use_chromium = True  # This line is important as Edge has a non-chromium and a chromium version
 options.headless = True
 options.add_argument('--ignore-certificate-errors')
@@ -34,7 +40,7 @@ ListOfGroups = []
 ListOfGameURLS = []
 DictOfPlayers = {}
 
-# Make class of player
+
 class Player:
     def __init__(self, name):
         self.name = name
@@ -45,7 +51,6 @@ class Player:
     def __str__(self):
         return f"{self.name} {self.MoveCount} {self.TotalMoveTime} {self.AverageMoveTime}"
 
-    # Make method to append a move to the move count
     def addMove(self, MoveTime):
         self.MoveCount += 1
         self.TotalMoveTime += MoveTime
@@ -70,6 +75,18 @@ def AnalyzeGamePlayingTime(GameNumber, driver):
     driver.get(url)
 
     time.sleep(5)
+
+    # This is not working correctly, it can't ever find the elements.
+    # try:
+    #     wait = WebDriverWait(driver, 10)
+    #     # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'move')))
+    #     wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'time-white')))
+    # except Exception as errmsg:
+    #     ic(errmsg)
+    #     print("Error waiting for page to load.")
+    #     return False
+    # finally:
+    #     driver.quit()
 
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
@@ -118,18 +135,18 @@ for group in ListOfGroups:
 
 ListOfGameNumbers = [GameURL.split('/')[-1] for GameURL in ListOfGameURLS]
 
-# Analyze the average playing times in the tournament
-with webdriver.Edge(options=options) as driver:
+
+with Edge(options=options) as driver:
     for game in ListOfGameNumbers:
         AnalyzeGamePlayingTime(game, driver)
 
-# Recalculate Average Move Time for All Players in Dict
+
 for player in DictOfPlayers.values():
     player.RecalcAverageMoveTime()
 
-# Sort the Dict by Average Move Time
+
 SortedList = sorted(DictOfPlayers.items(), key=lambda x: x[1].AverageMoveTime, reverse=True)
 
-# Print the Sorted Dict0
+
 for player_name, player_obj in SortedList:
     print(player_name, player_obj.MoveCount, player_obj.TotalMoveTime, player_obj.AverageMoveTime)
