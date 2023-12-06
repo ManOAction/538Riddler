@@ -13,4 +13,9 @@ Additionally we can modify ~/.cargo/config to have this in it to stop the vcs cr
 [package]
 vcs = "none"
 
+2) Update with...
+rustup update
 
+3) Compile and Test With
+cargo build
+cargo run
